@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@better-auth/utils": "^0.5.1",
+    "@hookform/resolvers": "^7.0.7",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "^7.10.1",
     "@radix-ui/react-slot": "^1.5.0",
@@ -21,12 +22,15 @@
     "better-auth": "^1.7.25",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "intlayer": "9.8.2",
     "lucide-react": "^1.75.0",
     "next": "16.4.6",
+    "next-intlayer": "9.8.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.92.0",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
