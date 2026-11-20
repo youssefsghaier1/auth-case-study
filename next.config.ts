@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withIntlayer } from "next-intlayer/server";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -14,4 +15,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Async on purpose: Intlayer builds the dictionaries before Next.js starts.
+export default withIntlayer(nextConfig);
