@@ -149,3 +149,24 @@
     0px 1px 5px 0px color-mix(in srgb, var(--c-dark) 20%, transparent),
     0px 6px 16px 0px color-mix(in srgb, var(--c-dark) 16%, transparent);
 }
+
+/*
+ * Soft violet glow of the auth screens (top-centre and bottom-centre).
+ * A radial gradient that fades along an S-curve (smoothstep) instead of a straight line,
+ * which matches the design. The element sets the size and position; --glow-strength the intensity.
+ * Colour: an even mix of primary-300 and primary-400, the hue measured on the design.
+ */
+@utility auth-glow {
+  --glow-color: color-mix(in srgb, var(--color-primary-300), var(--color-primary-400));
+  --glow: color-mix(in srgb, var(--glow-color) var(--glow-strength, 65%), transparent);
+
+  background-image: radial-gradient(
+    closest-side,
+    var(--glow) 0%,
+    color-mix(in srgb, var(--glow) 90%, transparent) 20%,
+    color-mix(in srgb, var(--glow) 65%, transparent) 40%,
+    color-mix(in srgb, var(--glow) 35%, transparent) 60%,
+    color-mix(in srgb, var(--glow) 10%, transparent) 80%,
+    transparent 100%
+  );
+}
