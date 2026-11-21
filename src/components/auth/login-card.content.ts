@@ -71,18 +71,7 @@ const loginCardContent = {
       terms: t({ fr: "Conditions d'utilisation", en: "Terms of use" }),
       privacy: t({ fr: "Politique de confidentialité", en: "Privacy policy" }),
     },
-    // Temporary screen until the 2FA step is built.
-    twoFactorPlaceholder: {
-      title: t({ fr: "Confirmez votre identité", en: "Confirm your identity" }),
-      notice: t({
-        fr: "Écran provisoire : la vérification en deux étapes sera construite à l'étape suivante.",
-        en: "Temporary screen: two-step verification will be built in the next step.",
-      }),
-      methodsLabel: t({ fr: "Méthodes disponibles pour ce compte :", en: "Methods available for this account:" }),
-      totp: t({ fr: "application d'authentification", en: "authenticator app" }),
-      otp: t({ fr: "code par courriel", en: "email code" }),
-      back: t({ fr: "Retour à la connexion", en: "Back to sign in" }),
-    },
+    redirecting: t({ fr: "Connexion réussie. Ouverture de votre compte…", en: "Signed in. Opening your account…" }),
   },
 } satisfies Dictionary;
 

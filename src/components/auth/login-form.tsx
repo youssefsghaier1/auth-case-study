@@ -25,7 +25,13 @@ const getTwoFactorMethods = (data: unknown): TwoFactorMethod[] | null => {
   return methods.filter((method): method is TwoFactorMethod => method === "totp" || method === "otp");
 };
 
-export const LoginForm = ({ onTwoFactorRequired }: { onTwoFactorRequired: (methods: TwoFactorMethod[]) => void }) => {
+type LoginFormProps = {
+  /** Pre-filled email, e.g. when coming back from an expired 2FA attempt. */
+  defaultEmail?: string;
+  onTwoFactorRequired: (methods: TwoFactorMethod[], email: string) => void;
+};
+
+export const LoginForm = ({ defaultEmail = "", onTwoFactorRequired }: LoginFormProps) => {
   const { login } = useIntlayer("login-card");
   const { fields, validationMessages, visibilityLabels, serverErrorMessage } = useAuthMessages();
   const { locale } = useLocale();
@@ -37,7 +43,7 @@ export const LoginForm = ({ onTwoFactorRequired }: { onTwoFactorRequired: (metho
     formState: { errors },
   } = useForm<LoginValues>({
     resolver: zodResolver(createLoginSchema(validationMessages)),
-    defaultValues: { loginEmail: "", loginPassword: "" },
+    defaultValues: { loginEmail: defaultEmail, loginPassword: "" },
   });
 
   const signIn = useMutation({
@@ -45,9 +51,9 @@ export const LoginForm = ({ onTwoFactorRequired }: { onTwoFactorRequired: (metho
       runAuthRequest((fetchOptions) =>
         authClient.signIn.email({ email: loginEmail, password: loginPassword, fetchOptions }),
       ),
-    onSuccess: (data) => {
+    onSuccess: (data, { loginEmail }) => {
       const twoFactorMethods = getTwoFactorMethods(data);
-      if (twoFactorMethods) onTwoFactorRequired(twoFactorMethods);
+      if (twoFactorMethods) onTwoFactorRequired(twoFactorMethods, loginEmail);
       else router.replace(`/${locale}/account`);
     },
   });
