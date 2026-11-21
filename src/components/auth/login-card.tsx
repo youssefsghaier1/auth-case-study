@@ -1,23 +1,53 @@
 "use client";
 
-import { useIntlayer } from "next-intlayer";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useIntlayer, useLocale } from "next-intlayer";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { AuthTabs } from "./auth-tabs";
-import { LoginForm, type TwoFactorMethod } from "./login-form";
+import { LoginForm } from "./login-form";
 import { SignupForm } from "./signup-form";
+import { pendingSignInStore, usePendingSignIn } from "./two-factor/pending-sign-in";
+import { TwoFactorScreen } from "./two-factor/two-factor-screen";
 
 type Tab = "login" | "signup";
 
-// Content of the glass card on /login: sign-in and sign-up tabs, switched without reloading the page.
+// Content of the glass card on /login: sign-in and sign-up tabs, switched without reloading the page,
+// then the two-factor screen in place of the form when the account needs it.
 export const LoginCard = () => {
   const content = useIntlayer("login-card");
+  const router = useRouter();
+  const { locale } = useLocale();
   const [tab, setTab] = useState<Tab>("login");
-  // Kept in memory only for now; the 2FA step will persist it and replace the placeholder below.
-  const [twoFactorMethods, setTwoFactorMethods] = useState<TwoFactorMethod[] | null>(null);
+  // Kept in sessionStorage: the 2FA screen and its countdown survive a reload (empty in a new tab: the form shows).
+  const pendingSignIn = usePendingSignIn();
+  const [lastEmail, setLastEmail] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  if (twoFactorMethods) {
-    return <TwoFactorPlaceholder methods={twoFactorMethods} onBack={() => setTwoFactorMethods(null)} />;
+  if (isRedirecting) {
+    return (
+      <p role="status" className="flex items-center justify-center gap-s py-2xl text-s">
+        <Loader2 aria-hidden className="size-5 motion-safe:animate-spin" />
+        {content.redirecting}
+      </p>
+    );
+  }
+
+  if (pendingSignIn) {
+    return (
+      <TwoFactorScreen
+        pending={pendingSignIn}
+        onVerified={() => {
+          setIsRedirecting(true); // shown while the account page loads, instead of the form coming back
+          pendingSignInStore.clear();
+          router.replace(`/${locale}/account`);
+        }}
+        onExit={() => {
+          setLastEmail(pendingSignIn.email); // the sign-in form comes back with the email filled in
+          pendingSignInStore.clear();
+        }}
+      />
+    );
   }
 
   const heading = tab === "login" ? content.login : content.signup;
@@ -36,7 +66,16 @@ export const LoginCard = () => {
           selected={tab}
           onSelect={setTab}
           tabs={[
-            { id: "login", label: content.tabs.login, panel: <LoginForm onTwoFactorRequired={setTwoFactorMethods} /> },
+            {
+              id: "login",
+              label: content.tabs.login,
+              panel: (
+                <LoginForm
+                  defaultEmail={lastEmail}
+                  onTwoFactorRequired={(methods, email) => pendingSignInStore.start(email, methods)}
+                />
+              ),
+            },
             { id: "signup", label: content.tabs.signup, panel: <SignupForm /> },
           ]}
         />
@@ -50,29 +89,6 @@ export const LoginCard = () => {
         </span>
         <span>{content.footer.privacy}</span>
       </p>
-    </div>
-  );
-};
-
-// Temporary screen, clearly marked: the real 2FA screen comes in the next step.
-const TwoFactorPlaceholder = ({ methods, onBack }: { methods: TwoFactorMethod[]; onBack: () => void }) => {
-  const { twoFactorPlaceholder: text } = useIntlayer("login-card");
-
-  return (
-    <div className="mx-auto flex w-full max-w-[480px] flex-col items-center gap-xl text-center">
-      <h1 className="text-lm leading-[1.2] font-semibold">{text.title}</h1>
-      <p className="rounded-s border border-dashed border-warning/60 px-m py-sm text-sx text-warning">{text.notice}</p>
-      <div className="text-s">
-        <p>{text.methodsLabel}</p>
-        <ul className="mt-xs">
-          {methods.map((method) => (
-            <li key={method}>{text[method]}</li>
-          ))}
-        </ul>
-      </div>
-      <Button type="button" variant="ghostDark" onClick={onBack}>
-        {text.back}
-      </Button>
     </div>
   );
 };

@@ -31,7 +31,8 @@ export const useAuthMessages = () => {
         return error.retryAfterSeconds
           ? errors.rateLimited({ seconds: String(error.retryAfterSeconds) })
           : errors.rateLimitedNoDelay;
-      case "unknown":
+      default:
+        // The two-factor kinds cannot happen at sign-in or sign-up.
         return errors.unknown;
     }
   };
