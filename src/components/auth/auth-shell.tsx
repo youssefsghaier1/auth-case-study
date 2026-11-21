@@ -1,15 +1,17 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { CompanyBackground } from "@/components/company/company-background";
 
 // Shared frame of every auth screen: violet background with two glows, the logo, and the glass card.
 export const AuthShell = ({ children }: { children: ReactNode }) => (
   // `isolate` keeps the -z-10 background above the <body> background instead of behind it.
   <div className="isolate flex min-h-dvh flex-col items-center px-m">
-    {/* Decorative background. Fixed, so it stays in place if a small screen has to scroll. */}
-    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-(--app-background)">
-      {/* Placeholder: the company cards go here, under the dimming layer (later step). */}
-      <div className="absolute inset-0" />
+    {/* Decorative background, hidden from screen readers and never focusable (inert).
+        Fixed, so it stays in place if a small screen has to scroll. */}
+    <div aria-hidden inert className="fixed inset-0 -z-10 overflow-hidden bg-(--app-background)">
       <div className="absolute inset-0 bg-black/30" />
+      {/* Measured on the design: the dimmed cards sit on top of the darkened page, under the glows. */}
+      <CompanyBackground />
       {/* Sizes measured on the 1920x1080 design (1080 x 720 px and 1440 x 560 px ellipses). */}
       <div className="auth-glow absolute top-0 left-1/2 h-[66.7vh] w-[56.25vw] -translate-x-1/2 -translate-y-1/2" />
       <div className="auth-glow absolute bottom-0 left-1/2 h-[51.9vh] w-[75vw] -translate-x-1/2 translate-y-1/2 [--glow-strength:71%]" />
