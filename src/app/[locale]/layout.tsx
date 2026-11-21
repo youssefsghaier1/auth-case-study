@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IntlayerProvider } from "next-intlayer/server";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { inter } from "@/lib/fonts";
 import { getRouteLocale } from "@/lib/locale";
 import "../globals.css";
@@ -18,7 +19,9 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
   return (
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <IntlayerProvider locale={locale}>{children}</IntlayerProvider>
+        <IntlayerProvider locale={locale}>
+          <QueryProvider>{children}</QueryProvider>
+        </IntlayerProvider>
       </body>
     </html>
   );
