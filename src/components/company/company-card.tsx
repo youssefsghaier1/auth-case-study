@@ -37,7 +37,13 @@ export const CompanyCard = ({ company }: { company: Company }) => {
       </div>
 
       {badge && (
-        <span className={cn("absolute top-[18px] right-[18px] rounded-xs px-s py-xs text-xs-plus leading-4", badge.className)}>
+        // text-[length:...]: inside cn(), tailwind-merge would drop the custom "text-xs-plus" next to the badge colour.
+        <span
+          className={cn(
+            "absolute top-[18px] right-[18px] rounded-xs px-s py-xs text-[length:var(--text-xs-plus)] leading-4",
+            badge.className,
+          )}
+        >
           {statusLabels[badge.label].value}
         </span>
       )}

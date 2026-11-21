@@ -61,7 +61,8 @@ export const AuthTabs = <Id extends string>({ label, tabs, selected, onSelect }:
               onClick={() => onSelect(tab.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={cn(
-                "-mb-[2px] cursor-pointer border-b-2 px-3 pt-xs pb-sm text-s font-semibold transition-colors duration-200 focus-visible:rounded-xs focus-visible:outline focus-visible:outline-white/60 motion-reduce:transition-none",
+                // text-[length:...]: inside cn(), tailwind-merge would drop the custom "text-s" (see code-input.tsx).
+                "-mb-[2px] cursor-pointer border-b-2 px-3 pt-xs pb-sm text-[length:var(--text-s)] font-semibold transition-colors duration-200 focus-visible:rounded-xs focus-visible:outline focus-visible:outline-white/60 motion-reduce:transition-none",
                 isSelected ? "border-primary-200 text-primary-300" : "border-transparent text-white hover:text-primary-200",
               )}
             >
