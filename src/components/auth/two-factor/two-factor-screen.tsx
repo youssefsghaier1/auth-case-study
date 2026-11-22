@@ -45,6 +45,7 @@ export const TwoFactorScreen = ({ pending, onVerified, onExit }: TwoFactorScreen
       onVerified={onVerified}
       onStop={setStopReason}
       onUseRecoveryCode={() => setView("recovery")}
+      onBackToSignIn={onExit}
     />
   );
 };
@@ -64,10 +65,17 @@ type CodeVerificationProps = {
   onVerified: () => void;
   onStop: (reason: StopReason) => void;
   onUseRecoveryCode: () => void;
+  onBackToSignIn: () => void;
 };
 
 // designs 03 (app only), 04 (app + email) and 05 (email only).
-const CodeVerification = ({ pending, onVerified, onStop, onUseRecoveryCode }: CodeVerificationProps) => {
+const CodeVerification = ({
+  pending,
+  onVerified,
+  onStop,
+  onUseRecoveryCode,
+  onBackToSignIn,
+}: CodeVerificationProps) => {
   const content = useIntlayer("two-factor");
   const errorMessage = useTwoFactorErrorMessage();
   const errorId = useId();
@@ -156,7 +164,8 @@ const CodeVerification = ({ pending, onVerified, onStop, onUseRecoveryCode }: Co
     <div className="flex flex-col items-center text-center tracking-normal">
       <h1 className="text-lm leading-[1.2] font-semibold">{content.title}</h1>
 
-      <div className="mt-[41px]">
+      {/* w-full: lets the boxes shrink on a narrow screen (see CodeInput). */}
+      <div className="mt-[41px] w-full">
         <CodeInput
           value={code}
           onChange={(value) => {
@@ -199,6 +208,12 @@ const CodeVerification = ({ pending, onVerified, onStop, onUseRecoveryCode }: Co
         )}
         <Button type="button" variant="ghostDark" onClick={onUseRecoveryCode}>
           {content.useRecoveryCode}
+        </Button>
+        {/* Not in the design: without it, someone who used the wrong account waits up to 10 minutes.
+            Discreet (kit's ghostMonochrome). It forgets the attempt in this tab; the server's 2FA cookie
+            stays until it expires, and the next sign-in replaces it. */}
+        <Button type="button" variant="ghostMonochrome" onClick={onBackToSignIn}>
+          {content.backToSignIn}
         </Button>
       </div>
 

@@ -21,7 +21,7 @@ export default async function EmailPage() {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-linear-160 from-primary-500 to-primary-800 px-m py-2xl tracking-normal">
       <div className="flex w-full max-w-[520px] flex-col items-center">
         <header className="flex items-center gap-s">
-          <Image src="/logo-stolos@2x.png" alt="" width={28} height={28} />
+          <Image src="/logo-stolos@2x.png" alt="" width={28} height={28} loading="eager" />
           <span className="text-ms font-semibold">{content.brand}</span>
         </header>
 
@@ -32,6 +32,8 @@ export default async function EmailPage() {
             alt=""
             width={220}
             height={217}
+            // Visible on arrival, and measured as the page's Largest Contentful Paint: never lazy.
+            loading="eager"
             className="pointer-events-none absolute -bottom-[95px] left-1/2 -z-10 -translate-x-1/2 opacity-[0.07]"
           />
           <Suspense fallback={<EmailSkeleton label={content.loading} />}>

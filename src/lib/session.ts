@@ -18,3 +18,14 @@ export const getCurrentUser = async (): Promise<CurrentUser> => {
   if (!session) redirect(`/${await getRouteLocale()}/login`);
   return { name: session.user.name, email: session.user.email };
 };
+
+/**
+ * For the sign-in page: a signed-in user is sent to the account page.
+ * Same check as getCurrentUser, so the two pages always agree: a cookie that is missing, forged, expired or
+ * signed out gives `null` for both, and there is no redirect loop. A sign-in waiting for its 2FA code has
+ * no session yet: it stays on the sign-in page. Same <Suspense> rule as getCurrentUser.
+ */
+export const redirectIfSignedIn = async (): Promise<void> => {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session) redirect(`/${await getRouteLocale()}/account`);
+};

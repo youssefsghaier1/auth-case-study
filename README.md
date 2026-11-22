@@ -103,3 +103,47 @@ Errors come back as `{ error: { status, code, message } }`.
 | Too many requests | 429 | — the `X-Retry-After` response header gives the seconds to wait |
 
 The server refuses a new email code or a new reset link for **30 seconds** after the previous request (429). Sign-in is limited to 3 attempts per 10 seconds.
+
+## Known limits
+
+What the front end leaves out or does differently from the design, and what the provided server leaves open. Figures come from the production build (`bun run build`, then `bun run start`) on localhost.
+
+### Design and layout
+
+- The six-box screens have a "Back to sign in" link that is not in the design. It makes the card 24 px taller, so its top sits 12 px higher.
+- All screens keep the card centre at y = 606 px on a 1920 × 1080 screen. The two-factor screens therefore sit about 16 px higher than in their design frames.
+- The provided `Input` and `PasswordInput` keep their own look (darker field, 18 px floating label, open-eye icon). The Figma frames, a snapshot of 19 November, show a slightly different field.
+- Below 1280 px wide, the company cards are hidden. On a phone, the six code boxes shrink (about 37 × 57 px at 390 px wide) instead of overflowing the card.
+- An unknown URL shows the default Next.js 404 page: English only, without a `lang` attribute.
+
+### Accessibility
+
+- Two texts are below the WCAG AA contrast of 4.5:1: the floating labels of the provided inputs (3.75:1) and the active tab label (3.8:1). The greyed "Resend" link during the 30-second countdown measures 2.5:1, but it is disabled, which WCAG exempts.
+- A disabled "Resend" link cannot take the keyboard focus, so a screen reader user does not hear the countdown until the link is enabled again.
+- The loading spinner of the provided `Button` keeps spinning when the system asks for reduced motion.
+
+### Behaviour
+
+- On `/login`, a signed-in visitor first sees the sign-in form for about 0.1 s, then lands on `/account`: the session check streams in after the prerendered page.
+- If the database is down and the browser has a session cookie, `/login` shows the error screen instead of the form.
+- "Back to sign in" forgets the sign-in attempt in this tab only. The server's two-factor cookie stays until it expires (10 minutes) or until the next sign-in replaces it.
+- A real double click sends one request. Two clicks fired by a script in the same task send two, and the server refuses the second (single-use codes and tokens, rate limits).
+- One generic error screen ("Something went wrong", "Try again") covers every server failure.
+- The Content-Security-Policy does not restrict scripts: a strict script policy needs a nonce per request, and prerendered pages cannot carry one. It only blocks framing by other sites, `<base>` changes, plugins and form posts to other sites.
+
+### Development-only pages
+
+- `/email` shows the latest password-reset email of any account, with its working link. It stands in for a mailbox and must not be deployed.
+- `/code` (provided) shows the test password, the current codes, the recovery codes and the reset links of every account.
+
+### Provided server (not changed in this project)
+
+- The rate limits trust the client's `X-Forwarded-For` header (the Better Auth default). A new value on each request removes them: 6 wrong passwords in a row all got 401 instead of 429, and 4 reset-link requests in a row were all accepted. Behind a proxy, set `advanced.ipAddress` (`ipAddressHeaders`, `trustedProxies`) to the header the proxy writes.
+- Without any client IP, all visitors share one rate-limit bucket per endpoint: one client can block sign-in for everyone, 10 seconds at a time.
+- Wrong passwords never lock an account. Only failed two-factor checks do (10 failures, 15 minutes).
+- The same authenticator code was accepted for two sign-in attempts in a row: there is no replay check.
+- A reset-link request gives the same answer for a known and an unknown email, but not in the same time: median 16 ms for a known email, 5 ms for an unknown one.
+- Sign-up answers 422 `USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` for an email that is already registered.
+- A password reset does not sign out the account's other sessions (`revokeSessionsOnPasswordReset` is off).
+- Cookies are `HttpOnly`, `SameSite=Lax` and `Path=/` (session: 7 days; two-factor attempt: 10 minutes). They are not `Secure` because `BETTER_AUTH_URL` starts with `http://`. With an `https://` URL, Better Auth marks them `Secure` and adds the `__Secure-` prefix.
+- Reset links and their redirects use `BETTER_AUTH_URL` (`http://localhost:3000`), whatever port the app runs on.
