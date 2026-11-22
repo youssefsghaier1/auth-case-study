@@ -26,20 +26,38 @@ export const createLoginSchema = (messages: ValidationMessages) =>
     loginPassword: z.string().min(1, { error: messages.passwordRequired }),
   });
 
-export const createSignupSchema = (messages: ValidationMessages) =>
+/**
+ * The one source of the new-password rules (sign-up and password reset): 8 to 128 characters, confirmation equal.
+ * The field names are parameters, so each form keeps its own `name` attributes.
+ */
+export const createNewPasswordSchema = <const Password extends string, const Confirm extends string>(
+  messages: ValidationMessages,
+  names: { password: Password; confirm: Confirm },
+) =>
   z
     .object({
-      signupEmail: emailField(messages),
-      signupPassword: z
+      [names.password]: z
         .string()
         .min(PASSWORD_MIN_LENGTH, { error: messages.passwordTooShort })
         .max(PASSWORD_MAX_LENGTH, { error: messages.passwordTooLong }),
-      signupPasswordConfirm: z.string().min(1, { error: messages.confirmRequired }),
-    })
-    .refine((values) => values.signupPassword === values.signupPasswordConfirm, {
-      error: messages.passwordsMismatch,
-      path: ["signupPasswordConfirm"],
-    });
+      [names.confirm]: z.string().min(1, { error: messages.confirmRequired }),
+    } as Record<Password | Confirm, z.ZodString>)
+    .refine(
+      (values) => {
+        const fields = values as Record<Password | Confirm, string>; // TypeScript cannot index Zod's output by a generic key
+        return fields[names.password] === fields[names.confirm];
+      },
+      { error: messages.passwordsMismatch, path: [names.confirm] },
+    );
+
+export const createSignupSchema = (messages: ValidationMessages) =>
+  z
+    .object({ signupEmail: emailField(messages) })
+    .and(createNewPasswordSchema(messages, { password: "signupPassword", confirm: "signupPasswordConfirm" }));
+
+export const createResetPasswordSchema = (messages: ValidationMessages) =>
+  createNewPasswordSchema(messages, { password: "newPassword", confirm: "newPasswordConfirm" });
 
 export type LoginValues = z.infer<ReturnType<typeof createLoginSchema>>;
 export type SignupValues = z.infer<ReturnType<typeof createSignupSchema>>;
+export type ResetPasswordValues = z.infer<ReturnType<typeof createResetPasswordSchema>>;

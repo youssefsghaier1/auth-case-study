@@ -11,6 +11,7 @@ export type AuthErrorKind =
   | "too-many-attempts" // 5 wrong codes in this sign-in attempt
   | "attempt-expired" // the 10-minute sign-in attempt is over (2FA cookie missing or expired)
   | "account-locked" // 10 failed checks in a row: account locked for a while
+  | "invalid-token" // reset link invalid, expired, already used or replaced by a newer one
   | "rate-limited" // 429 from the rate limiter (X-Retry-After)
   | "unknown";
 
@@ -39,6 +40,7 @@ const KIND_BY_CODE: Record<string, AuthErrorKind> = {
   TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "too-many-attempts",
   INVALID_TWO_FACTOR_COOKIE: "attempt-expired",
   ACCOUNT_TEMPORARILY_LOCKED: "account-locked", // a 429 too, so it must be matched before the status check
+  INVALID_TOKEN: "invalid-token",
 };
 
 const toKind = (error: { status: number; code?: string }): AuthErrorKind => {
