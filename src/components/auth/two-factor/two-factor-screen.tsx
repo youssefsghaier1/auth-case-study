@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { CodeInput } from "@/components/ui/code-input";
 import { authClient } from "@/lib/auth-client";
 import { type AuthErrorKind, AuthRequestError, runAuthRequest } from "@/lib/auth-errors";
-import { ATTEMPT_LIFETIME_MS, type PendingSignIn, pendingSignInStore, RESEND_COOLDOWN_MS } from "./pending-sign-in";
+import { sentAtFromRetryAfter, useCooldownSecondsLeft } from "@/lib/resend-cooldown";
+import { useSecondsLeft } from "@/lib/use-seconds-left";
+import { ATTEMPT_LIFETIME_MS, type PendingSignIn, pendingSignInStore } from "./pending-sign-in";
 import { RecoveryForm } from "./recovery-form";
 import { getStopReason, type StopReason, useTwoFactorErrorMessage } from "./two-factor-errors";
-import { useSecondsLeft } from "./use-seconds-left";
 
 type TwoFactorScreenProps = {
   pending: PendingSignIn;
@@ -82,9 +83,7 @@ const CodeVerification = ({ pending, onVerified, onStop, onUseRecoveryCode }: Co
       if (stop) return onStop(stop);
       // Refused because a code went out less than 30 s ago (e.g. sent just before a reload): align the countdown.
       if (error instanceof AuthRequestError && error.kind === "rate-limited" && error.retryAfterSeconds) {
-        pendingSignInStore.update({
-          emailCodeSentAt: Date.now() - RESEND_COOLDOWN_MS + error.retryAfterSeconds * 1000,
-        });
+        pendingSignInStore.update({ emailCodeSentAt: sentAtFromRetryAfter(error.retryAfterSeconds) });
       }
     },
   });
@@ -127,11 +126,7 @@ const CodeVerification = ({ pending, onVerified, onStop, onUseRecoveryCode }: Co
     },
   });
 
-  // Never above 30: the clock state can be up to 250 ms older than the stored timestamp.
-  const cooldownLeft = Math.min(
-    useSecondsLeft(pending.emailCodeSentAt === undefined ? undefined : pending.emailCodeSentAt + RESEND_COOLDOWN_MS),
-    RESEND_COOLDOWN_MS / 1000,
-  );
+  const cooldownLeft = useCooldownSecondsLeft(pending.emailCodeSentAt);
   // Only the countdown and a request in flight block the link: a stale marker from a reload never does.
   const canSend = cooldownLeft === 0 && !sendEmailCode.isPending;
   const sendRefusedForCooldown =
