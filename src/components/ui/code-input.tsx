@@ -106,14 +106,21 @@ export const CodeInput = ({
     }
   };
 
+  // Only the box to type in is in the Tab order (roving tabindex): Tab leaves the group for the links below.
+  // Without it, Tab moved to the next (empty) box and onFocus sent it back: the keyboard was stuck in the boxes.
+  const tabStop = Math.min(value.length, length - 1);
+
   return (
-    <div role="group" aria-label={label} aria-describedby={errorId} className="flex justify-center gap-sm">
+    // w-full + flex-1 boxes capped at 52px: 52x81 as in the design when there is room, narrower on a phone
+    // instead of overflowing the card.
+    <div role="group" aria-label={label} aria-describedby={errorId} className="flex w-full justify-center gap-s sm:gap-sm">
       {Array.from({ length }, (_, index) => (
         <input
           key={index}
           ref={(element) => {
             boxes.current[index] = element;
           }}
+          tabIndex={index === tabStop ? 0 : -1}
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
@@ -132,7 +139,7 @@ export const CodeInput = ({
           // text-[length:var(--text-l)], not text-l: tailwind-merge (in cn) does not know the project's custom
           // sizes, takes "text-l" for a colour and drops it next to text-white.
           className={cn(
-            "h-[81px] w-[52px] rounded-[4px] border-2 border-white/50 bg-transparent text-center text-[length:var(--text-l)] text-white transition-colors duration-200 outline-none placeholder:text-white/20 focus:border-white disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none",
+            "aspect-[52/81] h-auto max-w-[52px] min-w-0 flex-1 rounded-[4px] border-2 border-white/50 bg-transparent text-center text-[length:var(--text-l)] text-white transition-colors duration-200 outline-none placeholder:text-white/20 focus:border-white disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none",
             invalid && "border-danger focus:border-danger",
           )}
         />
