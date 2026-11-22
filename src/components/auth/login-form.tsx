@@ -12,6 +12,7 @@ import { TextField } from "@/components/ui/text-field";
 import { authClient } from "@/lib/auth-client";
 import { runAuthRequest } from "@/lib/auth-errors";
 import { createLoginSchema, type LoginValues } from "./auth-schemas";
+import { resetRequestStore } from "./password-reset/reset-request";
 import { useAuthMessages } from "./use-auth-messages";
 
 export type TwoFactorMethod = "totp" | "otp";
@@ -80,7 +81,10 @@ export const LoginForm = ({ defaultEmail = "", onTwoFactorRequired }: LoginFormP
       </div>
 
       <Button asChild variant="ghostDark" className="mt-[23px]">
-        <Link href={`/${locale}/forgot-password`}>{login.forgotPassword}</Link>
+        {/* A new forgot-password flow starts on the form, not on the confirmation of an earlier request in this tab. */}
+        <Link href={`/${locale}/forgot-password`} onClick={() => resetRequestStore.clear()}>
+          {login.forgotPassword}
+        </Link>
       </Button>
 
       {signIn.isError && (
