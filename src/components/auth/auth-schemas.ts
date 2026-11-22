@@ -12,7 +12,7 @@ export type ValidationMessages = {
 };
 
 // Same limits as the server (Better-Auth defaults: 8 to 128 characters).
-export const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 128;
 
 const emailField = (messages: ValidationMessages) =>

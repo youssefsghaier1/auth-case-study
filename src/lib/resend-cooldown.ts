@@ -4,7 +4,7 @@ import { useSecondsLeft } from "./use-seconds-left";
  * Same as RESEND_COOLDOWN_SECONDS in src/lib/auth.ts (not imported: that module is server-only).
  * The server refuses a new email code or a new reset link for 30 s after the previous one (429 + X-Retry-After).
  */
-export const RESEND_COOLDOWN_MS = 30 * 1000;
+const RESEND_COOLDOWN_MS = 30 * 1000;
 
 /**
  * Seconds before a new code or link may be requested, from when the server accepted the last one (`sentAt`).
