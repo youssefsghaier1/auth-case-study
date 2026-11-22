@@ -79,6 +79,8 @@ const NewPasswordForm = ({ token, onInvalidLink }: { token: string; onInvalidLin
 
   return (
     <form
+      // method="post": a form sent before React has loaded must not put the fields in the URL.
+      method="post"
       noValidate
       onSubmit={handleSubmit((values) => resetPassword.mutate(values))}
       className="flex flex-col items-center text-center tracking-normal"

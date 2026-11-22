@@ -69,6 +69,8 @@ const ForgotPasswordForm = ({ sendLink }: { sendLink: SendLinkMutation }) => {
 
   return (
     <form
+      // method="post": a form sent before React has loaded must not put the fields in the URL.
+      method="post"
       noValidate
       onSubmit={handleSubmit(({ loginEmail }) => {
         resetRequestStore.start(loginEmail); // before the request, so a reload during it keeps the confirmation

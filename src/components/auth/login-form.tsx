@@ -60,7 +60,8 @@ export const LoginForm = ({ defaultEmail = "", onTwoFactorRequired }: LoginFormP
   });
 
   return (
-    <form noValidate onSubmit={handleSubmit((values) => signIn.mutate(values))} className="flex flex-col">
+    // method="post": a form sent before React has loaded must not put the fields (password) in the URL.
+    <form method="post" noValidate onSubmit={handleSubmit((values) => signIn.mutate(values))} className="flex flex-col">
       <div className="flex flex-col gap-[17px]">
         <TextField
           id="login-email"
